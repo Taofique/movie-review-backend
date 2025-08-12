@@ -55,11 +55,26 @@
 //   }
 // );
 
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../utils/db.js";
 import type { TReview, TReviewCreateInput } from "../types/review.js";
 
-export class Review extends Model<TReview, TReviewCreateInput> {}
+// Optional: tell Sequelize that `id` is auto-generated, so it's optional when creating
+interface ReviewCreationAttributes
+  extends Optional<TReview, "id" | "createdAt" | "updatedAt"> {}
+
+export class Review
+  extends Model<TReview, ReviewCreationAttributes>
+  implements TReview
+{
+  declare id: number;
+  declare content: string;
+  declare rating: number;
+  declare userId: number;
+  declare movieId: number;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
+}
 
 Review.init(
   {

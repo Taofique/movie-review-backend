@@ -48,11 +48,18 @@
 //   }
 // );
 
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, CreationOptional } from "sequelize";
 import { sequelize } from "../utils/db.js";
 import type { TUser, TUserCreateInput } from "../types/user.js";
 
-export class User extends Model<TUser, TUserCreateInput> {}
+export class User extends Model<TUser, TUserCreateInput> {
+  declare id: CreationOptional<number>;
+  declare username: string;
+  declare email: string;
+  declare password: string;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+}
 
 User.init(
   {
