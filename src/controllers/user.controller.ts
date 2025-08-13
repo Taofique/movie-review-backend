@@ -1,7 +1,81 @@
 // controllers/user.controller.ts
 import { Request, Response } from "express";
+import bcrypt from "bcrypt";
 import { User } from "../models/user.model.js";
+import jwt, { Secret, SignOptions } from "jsonwebtoken";
 import type { TUserCreateInput, TUser } from "../types/user.js";
+import "dotenv/config";
+
+const JWT_SECRET: Secret = process.env.JWT_SECRET as Secret;
+const JWT_EXPIRES_IN: string = process.env.JWT_EXPIRES_IN || "1h";
+
+// Register User
+
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // Checking if user already exists in database
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      res.status(400).json({ message: "Email already in use" });
+      return;
+    }
+
+    // Hashing password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // User create
+    const newUser = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: newUser.id,
+        name: newUser.username,
+        email: newUser.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error registering user:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// LOGIN USER
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      res.status(400).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    // Create JWT
+    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
+      expiresIn: JWT_EXPIRES_IN,
+    } as SignOptions);
+
+    res.json({ message: "Login successful", token });
+  } catch (error) {
+    console.error("Error logging in:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // GET all users
 export const getAllUsers = async (
@@ -50,11 +124,9 @@ export const createUser = async (
 
     // Simple validation
     if (!username || !email || !password) {
-      res
-        .status(400)
-        .json({
-          message: "All fields (username, email, password) are required",
-        });
+      res.status(400).json({
+        message: "All fields (username, email, password) are required",
+      });
       return;
     }
 
