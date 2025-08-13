@@ -45,12 +45,24 @@
 
 // models/movie.model.ts
 // models/movieModel.ts
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../utils/db.js";
 import type { TMovie, TMovieCreateInput } from "../types/movie.js";
 
-export class Movie extends Model<TMovie, TMovieCreateInput> {}
+// 1. CreationAttributes makes id, createdAt, updatedAt optional during creation
+interface MovieCreationAttributes
+  extends Optional<TMovie, "id" | "createdAt" | "updatedAt"> {}
+// 2. Define model class with declared properties and proper typing
+export class Movie extends Model<TMovie, TMovieCreateInput> implements TMovie {
+  declare id: number;
+  declare title: string;
+  declare genre: string;
+  declare releaseYear: number;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
+}
 
+// 3. Initialize model
 Movie.init(
   {
     id: {
