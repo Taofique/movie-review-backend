@@ -48,17 +48,24 @@
 //   }
 // );
 
-import { DataTypes, Model, CreationOptional } from "sequelize";
+import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../utils/db.js";
 import type { TUser, TUserCreateInput } from "../types/user.js";
 
-export class User extends Model<TUser, TUserCreateInput> {
-  declare id: CreationOptional<number>;
+interface UserCreationAttributes
+  extends Optional<TUser, "id" | "createdAt" | "updatedAt" | "avatarUrl"> {}
+
+export class User
+  extends Model<TUser, UserCreationAttributes>
+  implements TUser
+{
+  declare id: number;
   declare username: string;
   declare email: string;
-  declare password: string;
-  declare createdAt: CreationOptional<Date>;
-  declare updatedAt: CreationOptional<Date>;
+  declare password: string; // maps to password_hash column
+  declare avatarUrl: string | null;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 User.init(
@@ -81,6 +88,12 @@ User.init(
     password: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: "password_hash",
+    },
+    avatarUrl: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "avatar_url",
     },
     createdAt: {
       type: DataTypes.DATE,
@@ -99,5 +112,6 @@ User.init(
     tableName: "users",
     timestamps: true,
     underscored: true,
+    indexes: [{ unique: true, fields: ["email"] }, { fields: ["username"] }],
   }
 );

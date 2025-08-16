@@ -26,6 +26,9 @@ import "./models/index.js";
 import movieRoutes from "./routes/movie.routes.js";
 import reviewRoutes from "./routes/review.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import genreRoutes from "./routes/genre.routes.js";
+import platformRoutes from "./routes/platform.routes.js";
+import visitRoutes from "./routes/visit.routes.js";
 
 const app = express();
 const port = 8080;
@@ -36,6 +39,9 @@ app.use(logger);
 app.use("/movies", movieRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/users", userRoutes);
+app.use("/genres", genreRoutes);
+app.use("/platforms", platformRoutes);
+app.use("/visits", visitRoutes);
 
 app.listen(port, async () => {
   console.log(`App is running on http://localhost:${port}`);

@@ -3,6 +3,7 @@ export type TUserCreateInput = {
   username: string;
   email: string;
   password: string;
+  avatarUrl?: string;
 };
 
 export type TUser = {
@@ -10,6 +11,7 @@ export type TUser = {
   username: string;
   email: string;
   password: string;
+  avatarUrl?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };

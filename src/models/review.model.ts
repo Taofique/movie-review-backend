@@ -58,6 +58,7 @@
 import { DataTypes, Model, Optional } from "sequelize";
 import { sequelize } from "../utils/db.js";
 import type { TReview, TReviewCreateInput } from "../types/review.js";
+import { recalcMovieRating } from "../services/rating.services.js";
 
 // Optional: tell Sequelize that `id` is auto-generated, so it's optional when creating
 interface ReviewCreationAttributes
@@ -118,5 +119,25 @@ Review.init(
     tableName: "reviews",
     timestamps: true,
     underscored: true,
+    indexes: [
+      { fields: ["movie_id"] },
+      { fields: ["user_id"] },
+      { fields: ["rating"] },
+    ],
   }
 );
+
+Review.addHook("afterCreate", async (instance) => {
+  const movieId = instance.getDataValue("movieId");
+  await recalcMovieRating(movieId);
+});
+
+Review.addHook("afterUpdate", async (instance) => {
+  const movieId = instance.getDataValue("movieId");
+  await recalcMovieRating(movieId);
+});
+
+Review.addHook("afterDestroy", async (instance) => {
+  const movieId = instance.getDataValue("movieId");
+  await recalcMovieRating(movieId);
+});
